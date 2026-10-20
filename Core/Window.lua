@@ -1,6 +1,11 @@
 --[[ Core/Window.lua : window creation, dragging, resizing, minimize, layout rows. ]]
 
 local OceanUI, Util = ...
+if not Util then
+    -- Some executors don't pass extra arguments to loadstring chunks; read the shared tables instead.
+    local shared = (type(getgenv) == "function" and getgenv() or _G).OceanUIShared
+    OceanUI, Util = shared.OceanUI, shared.Util
+end
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")

@@ -1,6 +1,11 @@
 --[[ Elements/Dropdown.lua : single or multi select dropdown with an inline list. ]]
 
 local OceanUI, Util = ...
+if not Util then
+    -- Some executors don't pass extra arguments to loadstring chunks; read the shared tables instead.
+    local shared = (type(getgenv) == "function" and getgenv() or _G).OceanUIShared
+    OceanUI, Util = shared.OceanUI, shared.Util
+end
 
 local Window = OceanUI.Window
 
@@ -8,6 +13,8 @@ local new = Util.new
 local addCorner = Util.addCorner
 local addPadding = Util.addPadding
 local makeLabel = Util.makeLabel
+local tween = Util.tween
+local fetchIcon = Util.fetchIcon
 local fire = Util.fire
 
 function Window:AddDropdown(options)
@@ -55,16 +62,35 @@ function Window:AddDropdown(options)
         TextSize = 12,
     }, head)
 
-    local chevron = new("TextLabel", {
-        AnchorPoint = Vector2.new(1, 0.5),
-        Position = UDim2.new(1, -8, 0.5, 0),
-        Size = UDim2.fromOffset(16, 16),
-        BackgroundTransparency = 1,
-        Text = "▾",
-        TextColor3 = theme.Muted,
-        TextSize = 14,
-        Font = Enum.Font.Gotham,
-    }, head)
+    -- chevron-right icon, rotated 90° (pointing down) while open.
+    -- Centered anchor so it spins around its middle. Falls back to a text arrow.
+    local chevron
+    local chevronAsset = fetchIcon("chevron-right")
+
+    if chevronAsset then
+        chevron = new("ImageLabel", {
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(1, -16, 0.5, 0),
+            Size = UDim2.fromOffset(16, 16),
+            BackgroundTransparency = 1,
+            Image = chevronAsset,
+            ImageColor3 = theme.Muted,
+            ScaleType = Enum.ScaleType.Fit,
+            Rotation = 0,
+        }, head)
+    else
+        chevron = new("TextLabel", {
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.new(1, -16, 0.5, 0),
+            Size = UDim2.fromOffset(16, 16),
+            BackgroundTransparency = 1,
+            Text = "›",
+            TextColor3 = theme.Muted,
+            TextSize = 20,
+            Font = Enum.Font.GothamBold,
+            Rotation = 0,
+        }, head)
+    end
 
     local holder = new("ScrollingFrame", {
         Name = "Options",
@@ -296,13 +322,13 @@ function Window:AddDropdown(options)
         open = true
         holder.Visible = true
         sizeHolder()
-        chevron.Text = "▴"
+        tween(chevron, { Rotation = 90 }, 0.15)
     end
 
     function d:Close()
         open = false
         holder.Visible = false
-        chevron.Text = "▾"
+        tween(chevron, { Rotation = 0 }, 0.15)
     end
 
     head.Activated:Connect(function()

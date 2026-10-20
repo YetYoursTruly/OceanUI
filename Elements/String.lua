@@ -1,6 +1,11 @@
 --[[ Elements/String.lua : text input. Fires on Enter/unfocus, or every keystroke with Live = true. ]]
 
 local OceanUI, Util = ...
+if not Util then
+    -- Some executors don't pass extra arguments to loadstring chunks; read the shared tables instead.
+    local shared = (type(getgenv) == "function" and getgenv() or _G).OceanUIShared
+    OceanUI, Util = shared.OceanUI, shared.Util
+end
 
 local Window = OceanUI.Window
 

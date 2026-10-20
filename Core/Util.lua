@@ -1,6 +1,11 @@
 --[[ Core/Util.lua : instance helpers, signals, number formatting and snapping. Shared by every module. ]]
 
 local OceanUI, Util = ...
+if not Util then
+    -- Some executors don't pass extra arguments to loadstring chunks; read the shared tables instead.
+    local shared = (type(getgenv) == "function" and getgenv() or _G).OceanUIShared
+    OceanUI, Util = shared.OceanUI, shared.Util
+end
 
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
@@ -134,4 +139,19 @@ function Util.makeSnapper(min, max, step)
 
         return math.floor(value * 1e6 + 0.5) / 1e6
     end
+end
+
+-- Returns an asset string from your ImageLib's global FetchImage, or nil if unavailable/failed.
+function Util.fetchIcon(name)
+    local fetch = Util.env.FetchImage
+    if type(fetch) ~= "function" then
+        return nil
+    end
+
+    local ok, result = pcall(fetch, name)
+    if ok and type(result) == "string" and result ~= "" then
+        return result
+    end
+
+    return nil
 end

@@ -73,6 +73,9 @@ local Util = {
     env = env,
 }
 
+-- Fallback channel for executors that don't forward extra arguments to loadstring chunks.
+env.OceanUIShared = { OceanUI = OceanUI, Util = Util }
+
 for _, path in ipairs(MODULES) do
     local okRead, source = pcall(readSource, path)
     if not okRead then
@@ -90,6 +93,7 @@ for _, path in ipairs(MODULES) do
     end
 end
 
+env.OceanUIShared = nil
 env.OceanUI = OceanUI
 
 return OceanUI
