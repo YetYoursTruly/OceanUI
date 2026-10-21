@@ -42,7 +42,7 @@ local LOCAL_FOLDER = env.OceanUILocal
 local MODULES = {
     "Core/Theme.lua",
     "Core/Util.lua",
-    "Core/Loading.lua"
+    "Core/Loading.lua",
     "Core/Units.lua",
     "Core/Players.lua",
     "Core/Element.lua",
