@@ -42,6 +42,7 @@ local LOCAL_FOLDER = env.OceanUILocal
 local MODULES = {
     "Core/Theme.lua",
     "Core/Util.lua",
+    "Core/Loading.lua"
     "Core/Units.lua",
     "Core/Players.lua",
     "Core/Element.lua",
@@ -91,6 +92,15 @@ for _, path in ipairs(MODULES) do
     if not okRun then
         error(string.format("[OceanUI] Error while running %s: %s", path, tostring(runError)), 0)
     end
+
+    if path == "Core/Loading.lua" then
+        OceanUI.Loading.Show()
+        task.wait()
+    end
+end
+
+if OceanUI.Loading then
+    OceanUI.Loading.Hide()
 end
 
 env.OceanUIShared = nil
