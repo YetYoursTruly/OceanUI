@@ -1,8 +1,8 @@
---[[ Core/Loading.lua : dark full-screen loading overlay with a random phrase and a clickable YouTube icon. ]]
+
+--[[ Core/Loading.lua : OceanUI loading overlay and social links. ]]
 
 local OceanUI, Util = ...
 if not Util then
-    -- Some executors don't pass extra arguments to loadstring chunks; read the shared tables instead.
     local shared = (type(getgenv) == "function" and getgenv() or _G).OceanUIShared
     OceanUI, Util = shared.OceanUI, shared.Util
 end
@@ -12,13 +12,12 @@ local LocalPlayer = Players.LocalPlayer
 
 local new = Util.new
 local addCorner = Util.addCorner
-local addStroke = Util.addStroke
 local tween = Util.tween
 local fetchIcon = Util.fetchIcon
 
 local YOUTUBE_URL = "https://www.youtube.com/@YetYoursTruly"
 local YOUTUBE_RED = Color3.fromRGB(255, 90, 90)
-local DEFAULT_HINT = "Click to copy my YouTube channel"
+local DEFAULT_HINT = "Click to copy any of my social links"
 
 local PHRASES = {
     "Sailing an ocean",
@@ -38,8 +37,8 @@ local PHRASES = {
 local Loading = {}
 OceanUI.Loading = Loading
 
-local gui = nil
-local session = nil
+local gui
+local session
 local shownAt = 0
 
 local function minTime()
@@ -67,7 +66,8 @@ local function copyToClipboard(text)
         return false
     end
 
-    return (pcall(fn, text))
+    local ok, result = pcall(fn, text)
+    return ok and result ~= false
 end
 
 function Loading.Show()
@@ -77,7 +77,6 @@ function Loading.Show()
 
     local theme = OceanUI.Theme
 
-    -- Clear a leftover overlay from a previous run.
     pcall(function()
         local old = Util.getGuiParent():FindFirstChild("OceanUILoading")
         if old then
@@ -96,7 +95,6 @@ function Loading.Show()
     gui = newGui
     shownAt = os.clock()
 
-    -- Dark background (also blocks clicks on the game behind it)
     local dim = new("Frame", {
         Name = "Dim",
         Size = UDim2.fromScale(1, 1),
@@ -110,7 +108,7 @@ function Loading.Show()
         Name = "Center",
         AnchorPoint = Vector2.new(0.5, 0.5),
         Position = UDim2.fromScale(0.5, 0.5),
-        Size = UDim2.fromOffset(320, 0),
+        Size = UDim2.fromOffset(340, 0),
         AutomaticSize = Enum.AutomaticSize.Y,
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
@@ -118,44 +116,59 @@ function Loading.Show()
     }, newGui)
 
     new("UIListLayout", {
-        Padding = UDim.new(0, 14),
+        Padding = UDim.new(0, 0),
         SortOrder = Enum.SortOrder.LayoutOrder,
         HorizontalAlignment = Enum.HorizontalAlignment.Center,
     }, center)
 
+    -- Same accent dot used in every OceanUI window title bar.
+    local dot = new("Frame", {
+        Name = "LoadingDot",
+        Size = UDim2.fromOffset(8, 8),
+        BackgroundColor3 = theme.Accent,
+        BorderSizePixel = 0,
+        LayoutOrder = 1,
+    }, center)
+
+    addCorner(dot, 4)
+
     local phraseLabel = new("TextLabel", {
         Name = "Phrase",
-        Size = UDim2.new(1, 0, 0, 28),
+        Size = UDim2.new(1, 0, 0, 32),
         BackgroundTransparency = 1,
         Text = "",
         RichText = true,
         TextColor3 = theme.Text,
         TextSize = 20,
         Font = Enum.Font.GothamBold,
-        LayoutOrder = 1,
-    }, center)
-
-    local button = new("TextButton", {
-        Name = "YouTube",
-        Size = UDim2.fromOffset(58, 58),
-        BackgroundColor3 = theme.Surface,
-        BackgroundTransparency = 0.1,
-        BorderSizePixel = 0,
-        AutoButtonColor = false,
-        Text = "",
         LayoutOrder = 2,
     }, center)
 
-    addCorner(button, 16)
-    addStroke(button)
+    -- Extra space separates the loading message from social links.
+    new("Frame", {
+        Name = "SocialSpacing",
+        Size = UDim2.new(1, 0, 0, 42),
+        BackgroundTransparency = 1,
+        LayoutOrder = 3,
+    }, center)
 
-    -- Text stand-in until the real icon loads (or if it never does)
+    -- Transparent clickable area; no visible button frame.
+    local button = new("TextButton", {
+        Name = "YouTube",
+        Size = UDim2.fromOffset(40, 32),
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+        AutoButtonColor = false,
+        Text = "",
+        LayoutOrder = 4,
+    }, center)
+
     local fallback = new("TextLabel", {
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
         Text = "▶",
         TextColor3 = YOUTUBE_RED,
-        TextSize = 22,
+        TextSize = 25,
         Font = Enum.Font.GothamBold,
     }, button)
 
@@ -171,26 +184,17 @@ function Loading.Show()
 
     local hint = new("TextLabel", {
         Name = "Hint",
-        Size = UDim2.new(1, 0, 0, 16),
-        AutomaticSize = Enum.AutomaticSize.Y,
+        Size = UDim2.new(1, 0, 0, 36),
         BackgroundTransparency = 1,
         Text = DEFAULT_HINT,
         TextColor3 = theme.Muted,
         TextSize = 12,
         Font = Enum.Font.Gotham,
         TextWrapped = true,
-        LayoutOrder = 3,
+        LayoutOrder = 5,
     }, center)
 
-    button.MouseEnter:Connect(function()
-        tween(button, { BackgroundColor3 = theme.Header }, 0.12)
-    end)
-    button.MouseLeave:Connect(function()
-        tween(button, { BackgroundColor3 = theme.Surface }, 0.15)
-    end)
-
-    -- Click: copy the channel link and show it on screen too (handy on PC)
-    local hintToken = nil
+    local hintToken
 
     button.Activated:Connect(function()
         if copyToClipboard(YOUTUBE_URL) then
@@ -198,7 +202,7 @@ function Loading.Show()
             hint.Text = "Copied to clipboard!\n" .. YOUTUBE_URL
         else
             hint.TextColor3 = theme.Danger
-            hint.Text = "Couldn't copy automatically, here's the link:\n" .. YOUTUBE_URL
+            hint.Text = "Copy this link:\n" .. YOUTUBE_URL
         end
 
         local token = {}
@@ -220,13 +224,16 @@ function Loading.Show()
         newGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
     end
 
-    local mySession = { alive = true, dim = dim, center = center }
+    local mySession = {
+        alive = true,
+        dim = dim,
+        center = center,
+    }
     session = mySession
 
     tween(dim, { BackgroundTransparency = 0.3 }, 0.3)
     tween(center, { GroupTransparency = 0 }, 0.3)
 
-    -- Rotating phrase with animated dots (the dots keep their space so the text doesn't jump)
     task.spawn(function()
         local phrase = pickPhrase(nil)
         local dots = 0
@@ -251,10 +258,11 @@ function Loading.Show()
         end
     end)
 
-    -- Load the YouTube icon once the image library is ready
     task.spawn(function()
         local startedAt = os.clock()
-        while type(Util.env.FetchImage) ~= "function" and os.clock() - startedAt < 15 do
+
+        while type(Util.env.FetchImage) ~= "function"
+            and os.clock() - startedAt < 15 do
             task.wait(0.1)
         end
 
@@ -267,8 +275,6 @@ function Loading.Show()
     end)
 end
 
--- Hide() waits until the minimum display time has passed, then fades out.
--- Hide(true) removes it immediately (used when loading fails).
 function Loading.Hide(immediate)
     local g, s = gui, session
     if not g or not s then

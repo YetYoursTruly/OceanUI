@@ -94,7 +94,21 @@ for _, path in ipairs(MODULES) do
     end
 
     if path == "Core/Loading.lua" then
-        OceanUI.Loading.Show()
+        print("[OceanUI] Loading module registered")
+
+        local ok, err = pcall(function()
+            assert(OceanUI.Loading, "OceanUI.Loading is nil")
+            assert(type(OceanUI.Loading.Show) == "function", "Loading.Show is not a function")
+
+            OceanUI.Loading.Show()
+        end)
+
+        if not ok then
+            warn("[OceanUI] Loading overlay failed: " .. tostring(err))
+            error(err, 0)
+        end
+
+        print("[OceanUI] Loading overlay displayed")
         task.wait()
     end
 end
