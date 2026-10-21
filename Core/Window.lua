@@ -67,10 +67,7 @@ function OceanUI:CreateWindow(options)
     local window = new("Frame", {
         Name = "Window",
         Size = UDim2.fromOffset(size.X, size.Y),
-        Position = UDim2.fromOffset(
-            math.max(0, math.floor((viewport.X - size.X) / 2)),
-            math.max(0, math.floor(viewport.Y * 0.15))
-        ),
+        Position = UDim2.new(0.5, -size.X / 2, 0.4, -size.Y / 2), -- Uses direct Anchor/Offset placement to lock it in the center of PC screens
         BackgroundColor3 = theme.Background,
         BorderSizePixel = 0,
         ClipsDescendants = true,
@@ -171,11 +168,13 @@ function OceanUI:CreateWindow(options)
         Size = UDim2.new(1, 0, 1, -HEADER_H),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
-        ScrollBarThickness = 3,
+        ScrollBarThickness = 6,
         ScrollBarImageColor3 = theme.Border,
         CanvasSize = UDim2.new(0, 0, 0, 0),
         AutomaticCanvasSize = Enum.AutomaticSize.Y,
         ScrollingDirection = Enum.ScrollingDirection.Y,
+        VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right,
+        ScrollingEnabled = true,
     }, window)
 
     new("UIListLayout", {
