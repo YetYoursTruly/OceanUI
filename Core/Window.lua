@@ -46,10 +46,10 @@ function OceanUI:CreateWindow(options)
     self._drag = nil
 
     local HEADER_H = 40
-    local minW, minH = 260, 160
-    local maxW = options.MaxSize and options.MaxSize.X or 520
-    local maxH = options.MaxSize and options.MaxSize.Y or 720
-    local size = options.Size or Vector2.new(320, 420)
+    local minW, minH = 450, 300 -- Raised minimum dimensions to prevent collapsing on resize
+    local maxW = options.MaxSize and options.MaxSize.X or 900 -- Extended bounds for 1440p+ setups
+    local maxH = options.MaxSize and options.MaxSize.Y or 800
+    local size = options.Size or Vector2.new(580, 460) -- Changed default footprint from vertical phone style to a wider desktop dashboard
 
     local camera = workspace.CurrentCamera
     local viewport = camera and camera.ViewportSize or Vector2.new(800, 600)
