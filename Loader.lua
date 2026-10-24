@@ -19,7 +19,7 @@
         Core/Players.lua    player list helpers
         Core/Element.lua    base element methods
         Core/Window.lua     window, dragging, resizing, layout
-        Elements/*.lua      one file per element type
+        Elements/*.lua      one file per element type (Toggle, Slider, Number, String, Dropdown, Button, Separator)
 ]]
 
 local env = _G
@@ -54,6 +54,7 @@ local MODULES = {
     "Elements/String.lua",
     "Elements/Dropdown.lua",
     "Elements/Button.lua", -- Button, Label, Section
+    "Elements/Separator.lua",
 }
 
 local function readSource(path)

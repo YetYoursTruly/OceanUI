@@ -64,6 +64,15 @@ function Window:AddLabel(text)
     }
 end
 
+--[[
+    Window:AddButton(options)
+        Name     = "Text on the button"
+        Callback = function() end
+        Style    = "Accent" (default) | "Secondary" | "Danger"
+        Disabled = false
+
+    Returns an element with :Click(), :SetText(text), :SetDisabled(bool).
+]]
 function Window:AddButton(options)
     options = options or {}
     local theme = OceanUI.Theme
@@ -72,27 +81,63 @@ function Window:AddButton(options)
     local row = self:_row(34)
     b.Row = row
 
-    row.BackgroundColor3 = theme.Accent
+    local styles = {
+        Accent = { Fill = theme.Accent, Hover = Color3.fromRGB(122, 210, 250), Text = theme.Background },
+        Secondary = { Fill = theme.Button, Hover = Color3.fromRGB(54, 84, 106), Text = theme.Text },
+        Danger = { Fill = theme.Danger, Hover = Color3.fromRGB(250, 165, 165), Text = theme.Background },
+    }
+    local style = styles[options.Style] or styles.Accent
+
+    row.BackgroundColor3 = style.Fill
     row.BackgroundTransparency = 0
 
     local button = new("TextButton", {
         Size = UDim2.fromScale(1, 1),
         BackgroundTransparency = 1,
+        AutoButtonColor = false,
         Text = options.Name or "Button",
-        TextColor3 = theme.Background,
+        TextColor3 = style.Text,
         TextSize = 13,
         Font = Enum.Font.GothamBold,
     }, row)
 
+    b.Disabled = options.Disabled == true
+
+    local function render()
+        button.TextTransparency = b.Disabled and 0.5 or 0
+        row.BackgroundTransparency = b.Disabled and 0.5 or 0
+    end
+    render()
+
     button.MouseEnter:Connect(function()
-        tween(row, { BackgroundColor3 = Color3.fromRGB(122, 210, 250) }, 0.12)
+        if not b.Disabled then
+            tween(row, { BackgroundColor3 = style.Hover }, 0.12)
+        end
     end)
     button.MouseLeave:Connect(function()
-        tween(row, { BackgroundColor3 = theme.Accent }, 0.15)
+        tween(row, { BackgroundColor3 = style.Fill }, 0.15)
+    end)
+    button.MouseButton1Down:Connect(function()
+        if not b.Disabled then
+            tween(row, { BackgroundColor3 = style.Fill }, 0.05)
+        end
     end)
 
     function b:Click()
+        if self.Disabled then
+            return
+        end
         fire(self)
+    end
+
+    function b:SetText(text)
+        self.Name = tostring(text)
+        button.Text = self.Name
+    end
+
+    function b:SetDisabled(state)
+        self.Disabled = state == true
+        render()
     end
 
     button.Activated:Connect(function()

@@ -3,7 +3,7 @@ local OceanUI = loadstring(game:HttpGet(getgenv().OceanUIBase .. "Loader.lua"))(
 
 local Window = OceanUI:CreateWindow({
     Title = "OceanUI Example",
-    Size = Vector2.new(320, 340),
+    Size = Vector2.new(320, 460),
 })
 
 -- Toggle test
@@ -61,5 +61,33 @@ Window:AddDropdown({
     Options = { "One", "Two", "Three" },
     Callback = function(choice)
         print("Dropdown:", choice)
+    end,
+})
+
+-- Separator tests
+Window:AddSeparator()
+Window:AddSeparator("Actions")
+
+-- Button tests
+Window:AddButton({
+    Name = "Button Test",
+    Callback = function()
+        print("Button clicked")
+    end,
+})
+
+Window:AddButton({
+    Name = "Secondary Button",
+    Style = "Secondary",
+    Callback = function()
+        print("Secondary clicked")
+    end,
+})
+
+Window:AddButton({
+    Name = "Danger Button",
+    Style = "Danger",
+    Callback = function()
+        print("Danger clicked")
     end,
 })
